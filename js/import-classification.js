@@ -13,7 +13,7 @@ class ImportClassificationSystem {
   }
 
   async init() {
-    // Charger les catégories disponibles
+    // Charger les catégories disponible
     await this.loadCategories();
     
     // Attacher les événements
