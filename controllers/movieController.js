@@ -6,6 +6,13 @@ const fs = require('fs-extra');
 const { promisify } = require('util');
 const childProcess = require('child_process');
 const exec = promisify(childProcess.exec);
+const sqlite3 = require('sqlite3').verbose();
+const https = require('https');
+const http = require('http');
+const crypto = require('crypto');
+
+// Connexion à la base de données pour les requêtes directes
+const db = new sqlite3.Database(config.database.path);
 
 const MovieController = {
   // Obtenir tous les films en base de données
@@ -142,6 +149,108 @@ const MovieController = {
         fs.createReadStream(movie.path).pipe(res);
       }
     });
+  },
+
+  // Supprimer un film de la base de données
+  deleteMovie: (req, res) => {
+    const { id } = req.params;
+    
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID du film requis'
+      });
+    }
+
+    Movie.delete(id, (err, result) => {
+      if (err) {
+        console.error('Erreur lors de la suppression du film:', err.message);
+        return res.status(500).json({
+          success: false,
+          message: 'Erreur lors de la suppression du film'
+        });
+      }
+
+      if (result.changes === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'Film non trouvé'
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Film supprimé avec succès'
+      });
+    });
+  },
+
+  // Obtenir les statistiques des fichiers
+  getFileStats: (req, res) => {
+    Movie.getStats((err, stats) => {
+      if (err) {
+        console.error('Erreur lors de la récupération des statistiques:', err.message);
+        return res.status(500).json({
+          success: false,
+          message: 'Erreur lors de la récupération des statistiques'
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        stats: stats
+      });
+    });
+  },
+
+  // Télécharger une affiche et la stocker localement
+  downloadPoster: async (req, res) => {
+    try {
+      const { movieId, posterUrl } = req.body;
+
+      if (!movieId || !posterUrl) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID du film et URL de l\'affiche requis'
+        });
+      }
+
+      // Créer le dossier des affiches s'il n'existe pas
+      await fs.ensureDir(config.paths.posters);
+
+      // Télécharger l'affiche
+      const localPosterPath = await downloadPosterFromUrl(posterUrl, movieId);
+
+      if (localPosterPath) {
+        // Mettre à jour la base de données avec le chemin local
+        Movie.updateLocalPoster(movieId, localPosterPath, (err, result) => {
+          if (err) {
+            console.error('Erreur lors de la mise à jour de la base de données:', err);
+            return res.status(500).json({
+              success: false,
+              message: 'Affiche téléchargée mais erreur de mise à jour BDD'
+            });
+          }
+
+          res.status(200).json({
+            success: true,
+            message: 'Affiche téléchargée et sauvegardée avec succès',
+            localPath: localPosterPath
+          });
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: 'Erreur lors du téléchargement de l\'affiche'
+        });
+      }
+    } catch (error) {
+      console.error('Erreur lors du téléchargement de l\'affiche:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erreur lors du téléchargement de l\'affiche'
+      });
+    }
   }
 };
 
@@ -239,6 +348,77 @@ async function scanDirectoryForMovies(directoryPath) {
   } catch (error) {
     console.error(`Erreur lors de la lecture du répertoire ${directoryPath}:`, error.message);
   }
+}
+
+// Fonction pour télécharger une affiche depuis une URL
+async function downloadPosterFromUrl(url, movieId) {
+  return new Promise((resolve, reject) => {
+    try {
+      // Générer un nom de fichier unique basé sur l'ID du film et un hash de l'URL
+      const urlHash = crypto.createHash('md5').update(url).digest('hex').substring(0, 8);
+      const extension = path.extname(url.split('?')[0]) || '.jpg';
+      const filename = `poster_${movieId}_${urlHash}${extension}`;
+      const localPath = path.join(config.paths.posters, filename);
+
+      // Vérifier si le fichier existe déjà
+      if (fs.existsSync(localPath)) {
+        console.log(`Affiche déjà téléchargée: ${localPath}`);
+        resolve(localPath);
+        return;
+      }
+
+      // Créer le flux d'écriture
+      const file = fs.createWriteStream(localPath);
+      
+      // Déterminer le module à utiliser (http ou https)
+      const requestModule = url.startsWith('https:') ? https : http;
+      
+      // Effectuer la requête
+      const request = requestModule.get(url, (response) => {
+        // Vérifier le code de statut
+        if (response.statusCode !== 200) {
+          console.error(`Erreur HTTP: ${response.statusCode} pour ${url}`);
+          fs.unlink(localPath, () => {}); // Supprimer le fichier en cas d'erreur
+          resolve(null);
+          return;
+        }
+
+        // Pipe la réponse vers le fichier
+        response.pipe(file);
+
+        file.on('finish', () => {
+          file.close(() => {
+            console.log(`Affiche téléchargée avec succès: ${localPath}`);
+            resolve(localPath);
+          });
+        });
+
+        file.on('error', (err) => {
+          console.error('Erreur lors de l\'écriture du fichier:', err);
+          fs.unlink(localPath, () => {}); // Supprimer le fichier en cas d'erreur
+          resolve(null);
+        });
+      });
+
+      request.on('error', (err) => {
+        console.error('Erreur lors du téléchargement:', err);
+        fs.unlink(localPath, () => {}); // Supprimer le fichier en cas d'erreur
+        resolve(null);
+      });
+
+      // Timeout après 30 secondes
+      request.setTimeout(30000, () => {
+        console.error('Timeout lors du téléchargement de l\'affiche');
+        request.destroy();
+        fs.unlink(localPath, () => {});
+        resolve(null);
+      });
+
+    } catch (error) {
+      console.error('Erreur lors du téléchargement de l\'affiche:', error);
+      resolve(null);
+    }
+  });
 }
 
 module.exports = MovieController;

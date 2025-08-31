@@ -17,7 +17,7 @@ window.electronAPI.updateMovieDetails = async function(movieId, updates) {
   }
 };
 
-// dashboard.js - Logique pour l'interface principale style Netflix améliorée
+// dashboard.js - Logique pour l'interface principale avec catégories
 document.addEventListener('DOMContentLoaded', () => {
   // Vérifier si l'utilisateur est connecté
   const userString = localStorage.getItem('user');
@@ -27,6 +27,14 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.href = 'login.html';
     return;
   }
+
+  // État global
+  const dashboardState = {
+    currentView: 'categories', // 'categories' ou 'media-detail'
+    currentCategory: null,
+    categories: [],
+    movies: []
+  };
   
   const user = JSON.parse(userString);
   
@@ -69,79 +77,79 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.href = 'login.html';
   });
   
-  // Recherche de dossier
-  scanFolderBtn.addEventListener('click', async () => {
-    try {
-      scanMenu.classList.remove('active');
-      statusMessage.textContent = 'Sélection du dossier à scanner...';
-      progressBar.style.width = '0%';
+  // Recherche de dossier - DÉSACTIVÉ : utilise maintenant le nouveau système de classification
+  // scanFolderBtn.addEventListener('click', async () => {
+  //   try {
+  //     scanMenu.classList.remove('active');
+  //     statusMessage.textContent = 'Sélection du dossier à scanner...';
+  //     progressBar.style.width = '0%';
       
-      // Lancer la recherche de dossier
-      const result = await window.electronAPI.scanMovies();
-      
-      if (result.success) {
-        statusMessage.textContent = result.message;
-        progressBar.style.width = '100%';
-        
-        // Masquer la barre de progression après 3 secondes
-        setTimeout(() => {
-          progressBar.style.width = '0%';
-          statusMessage.textContent = 'Prêt à rechercher des vidéos';
-        }, 3000);
-        
-        // Mettre à jour la liste des films
-        loadMovies();
-      } else {
-        statusMessage.textContent = result.message || 'Erreur lors de la recherche';
-        progressBar.style.width = '0%';
-      }
-    } catch (error) {
-      console.error('Erreur lors de la recherche de films:', error);
-      statusMessage.textContent = 'Erreur lors de la recherche';
-      progressBar.style.width = '0%';
-    }
-  });
+  //     // Lancer la recherche de dossier
+  //     const result = await window.electronAPI.scanMovies();
+  //     
+  //     if (result.success) {
+  //       statusMessage.textContent = result.message;
+  //       progressBar.style.width = '100%';
+  //       
+  //       // Masquer la barre de progression après 3 secondes
+  //       setTimeout(() => {
+  //         progressBar.style.width = '0%';
+  //         statusMessage.textContent = 'Prêt à rechercher des vidéos';
+  //       }, 3000);
+  //       
+  //       // Mettre à jour la liste des films
+  //       loadMovies();
+  //     } else {
+  //       statusMessage.textContent = result.message || 'Erreur lors de la recherche';
+  //       progressBar.style.width = '0%';
+  //     }
+  //   } catch (error) {
+  //     console.error('Erreur lors de la recherche de films:', error);
+  //     statusMessage.textContent = 'Erreur lors de la recherche';
+  //     progressBar.style.width = '0%';
+  //   }
+  // });
   
-  // Recherche de fichier
-  scanFileBtn.addEventListener('click', async () => {
-    try {
-      scanMenu.classList.remove('active');
-      statusMessage.textContent = 'Sélection du fichier à ajouter...';
-      progressBar.style.width = '0%';
-      
-      // Configuration pour rechercher un seul fichier
-      const options = {
-        mode: 'file',
-        filters: [
-          { name: 'Vidéos', extensions: ['mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'webm'] }
-        ]
-      };
-      
-      // Lancer la recherche d'un fichier
-      const result = await window.electronAPI.scanMovies(options);
-      
-      if (result.success) {
-        statusMessage.textContent = result.message;
-        progressBar.style.width = '100%';
-        
-        // Masquer la barre de progression après 3 secondes
-        setTimeout(() => {
-          progressBar.style.width = '0%';
-          statusMessage.textContent = 'Prêt à rechercher des vidéos';
-        }, 3000);
-        
-        // Mettre à jour la liste des films
-        loadMovies();
-      } else {
-        statusMessage.textContent = result.message || 'Erreur lors de l\'ajout du fichier';
-        progressBar.style.width = '0%';
-      }
-    } catch (error) {
-      console.error('Erreur lors de l\'ajout du fichier:', error);
-      statusMessage.textContent = 'Erreur lors de l\'ajout du fichier';
-      progressBar.style.width = '0%';
-    }
-  });
+  // Recherche de fichier - DÉSACTIVÉ : utilise maintenant le nouveau système de classification
+  // scanFileBtn.addEventListener('click', async () => {
+  //   try {
+  //     scanMenu.classList.remove('active');
+  //     statusMessage.textContent = 'Sélection du fichier à ajouter...';
+  //     progressBar.style.width = '0%';
+  //     
+  //     // Configuration pour rechercher un seul fichier
+  //     const options = {
+  //       mode: 'file',
+  //       filters: [
+  //         { name: 'Vidéos', extensions: ['mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'webm'] }
+  //       ]
+  //     };
+  //     
+  //     // Lancer la recherche d'un fichier
+  //     const result = await window.electronAPI.scanMovies(options);
+  //     
+  //     if (result.success) {
+  //       statusMessage.textContent = result.message;
+  //       progressBar.style.width = '100%';
+  //       
+  //       // Masquer la barre de progression après 3 secondes
+  //       setTimeout(() => {
+  //         progressBar.style.width = '0%';
+  //         statusMessage.textContent = 'Prêt à rechercher des vidéos';
+  //       }, 3000);
+  //       
+  //       // Mettre à jour la liste des films
+  //       loadMovies();
+  //     } else {
+  //       statusMessage.textContent = result.message || 'Erreur lors de l\'ajout du fichier';
+  //       progressBar.style.width = '0%';
+  //     }
+  //   } catch (error) {
+  //     console.error('Erreur lors de l\'ajout du fichier:', error);
+  //     statusMessage.textContent = 'Erreur lors de l\'ajout du fichier';
+  //     progressBar.style.width = '0%';
+  //   }
+  // });
   
   // Recherche dans la section films
   filterSearch.addEventListener('input', () => {
@@ -418,19 +426,40 @@ document.addEventListener('DOMContentLoaded', () => {
   // Chargement des films
   async function loadMovies() {
     try {
+      console.log('🔍 Chargement des films...');
       const data = await window.electronAPI.getAllMovies();
       
+      console.log('📋 Données reçues:', data);
+      
       if (data.success) {
+        console.log(`📊 ${data.movies.length} films trouvés`);
+        
         // Avant d'afficher les films, appliquer les modifications enregistrées localement
         const modifiedMovies = applyLocalEdits(data.movies);
+        
+        console.log('📝 Films après modifications locales:', modifiedMovies.length);
         
         // Afficher les films avec les modifications appliquées
         displayMovies(modifiedMovies);
       } else {
-        console.error('Erreur lors du chargement des films:', data.message);
+        console.error('❌ Erreur lors du chargement des films:', data.message);
+        // Afficher un message d'erreur dans l'interface
+        mediaGrid.innerHTML = `
+          <div class="empty-state">
+            <span class="icon">⚠️</span>
+            <p>Erreur lors du chargement des films: ${data.message}</p>
+          </div>
+        `;
       }
     } catch (error) {
-      console.error('Erreur lors du chargement des films:', error);
+      console.error('💥 Erreur lors du chargement des films:', error);
+      // Afficher un message d'erreur dans l'interface
+      mediaGrid.innerHTML = `
+        <div class="empty-state">
+          <span class="icon">💥</span>
+          <p>Erreur technique: ${error.message}</p>
+        </div>
+      `;
     }
   }
   
@@ -463,81 +492,13 @@ document.addEventListener('DOMContentLoaded', () => {
     return movieEdits;
   }
   
-  // Fonction helper pour créer une section de catégorie
-  function createCategorySection(categoryTitle, moviesInCategory) {
-    let html = `
-      <div class="category-section">
-        <div class="category-header">
-          <h3 class="category-title">${categoryTitle}</h3>
-          <span class="category-count">${moviesInCategory.length} média(s)</span>
-        </div>
-        <div class="category-grid">
-    `;
-    
-    // Charger les préférences utilisateur
-    const userPrefs = loadUserPreferences();
-    
-    // Ajouter les films de cette catégorie
-    moviesInCategory.forEach(movie => {
-      // Configurer l'image de couverture
-      let thumbnailSrc;
-      if (movie.posterUrl) {
-        thumbnailSrc = movie.posterUrl;
-      } else if (movie.thumbnail) {
-        thumbnailSrc = `file://${movie.thumbnail}`;
-      } else {
-        thumbnailSrc = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzFlM2E2ZCIvPgo8dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iMC4zZW0iPkF1Y3VuZSBpbWFnZTwvdGV4dD4KPC9zdmc+";
-      }
-      
-      // État "vu/à voir"
-      const isWatched = userPrefs.watchedMovies[movie.id] === true;
-      const watchButtonText = isWatched ? 'vu !' : 'à voir';
-      const watchButtonClass = isWatched ? 'watched' : '';
-      
-      // Étoiles de notation
-      const rating = userPrefs.ratings[movie.id] || 0;
-      const starsHtml = [1, 2, 3, 4, 5].map(star => {
-        const filledClass = star <= rating ? 'filled' : '';
-        return `<span class="star ${filledClass}" data-value="${star}">⭐</span>`;
-      }).join('');
-      
-      html += `
-        <div class="media-card" data-id="${movie.id}" data-title="${movie.title}">
-          <div class="media-thumbnail">
-            <img src="${thumbnailSrc}" alt="${movie.title}" loading="lazy">
-            <div class="media-overlay">
-              <button class="play-button" title="Lire la vidéo">▶</button>
-            </div>
-          </div>
-          <div class="media-info">
-            <h4 class="media-title">${movie.title}</h4>
-            <div class="media-meta">
-              <span class="media-duration">${formatTime(movie.duration)}</span>
-              <span class="media-size">${movie.formattedSize}</span>
-            </div>
-            <div class="media-actions">
-              <div class="rating-stars">
-                ${starsHtml}
-              </div>
-              <button class="btn-watch-toggle ${watchButtonClass}" data-movie-id="${movie.id}">${watchButtonText}</button>
-            </div>
-          </div>
-        </div>
-      `;
-    });
-    
-    html += `
-        </div>
-      </div>
-    `;
-    
-    return html;
-  }
   
   // Affichage des films dans la grille - VERSION HYBRIDE (Template + Catégories)
 function displayMovies(movies) {
+  console.log('🎬 displayMovies appelé avec', movies.length, 'films');
+  
   // Debug : voir les catégories des films
-  console.log('Films et leurs catégories:', movies.map(m => ({title: m.title, category: m.category})));
+  console.log('Films et leurs catégories:', movies.map(m => ({title: m.title, category: m.category, local_poster: m.local_poster})));
 
   if (!movies || movies.length === 0) {
     mediaGrid.innerHTML = `
@@ -637,20 +598,58 @@ function createCategorySection(categoryTitle, moviesInCategory) {
     mediaCard.dataset.id = movie.id;
     mediaCard.dataset.title = movie.title.toLowerCase();
     
-    // Configurer l'image de couverture - utiliser la miniature ou l'image personnalisée
-    let thumbnailSrc;
-    if (movie.posterUrl) {
+    // Configurer l'image de couverture - LOGIQUE SIMPLIFIÉE
+    let thumbnailSrc = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzFlM2E2ZCIvPgo8dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iMC4zZW0iPkF1Y3VuZSBpbWFnZTwvdGV4dD4KPC9zdmc+"; // Image par défaut
+    
+    if (movie.local_poster) {
+      // Affiche locale téléchargée - URL COMPLÈTE pour Electron
+      const filename = movie.local_poster.split('\\').pop().split('/').pop();
+      thumbnailSrc = `http://localhost:3000/uploads/posters/${filename}`;
+    } else if (movie.posterUrl && movie.posterUrl.startsWith('data:')) {
+      // Data URL (base64)
+      thumbnailSrc = movie.posterUrl;
+    } else if (movie.posterUrl) {
+      // URL en ligne (TMDB)
       thumbnailSrc = movie.posterUrl;
     } else if (movie.thumbnail) {
-      thumbnailSrc = `file://${movie.thumbnail}`;
-    } else {
-      thumbnailSrc = '../public/img/default-thumbnail.svg';
+      // Miniature générée
+      thumbnailSrc = movie.thumbnail;
     }
+    
+    // Debug pour voir la source de l'image
+    console.log(`🖼️ Image pour ${movie.title}:`, {
+      local_poster: movie.local_poster,
+      posterUrl: movie.posterUrl, 
+      thumbnail: movie.thumbnail,
+      final_src: thumbnailSrc,
+      priorite_utilisee: movie.local_poster ? 'LOCAL_POSTER' : 
+                       (movie.posterUrl && movie.posterUrl.startsWith('data:')) ? 'DATA_URL' :
+                       movie.posterUrl ? 'POSTER_URL' :
+                       movie.thumbnail ? 'THUMBNAIL' : 'DEFAULT'
+    });
     
     const thumbnailImg = mediaCard.querySelector('.media-thumbnail');
     thumbnailImg.src = thumbnailSrc;
     thumbnailImg.alt = movie.title;
-    thumbnailImg.onerror = () => { thumbnailImg.src = '../public/img/default-thumbnail.svg'; };
+    
+    // En cas d'erreur de chargement, utiliser l'image par défaut
+    thumbnailImg.onerror = () => { 
+      console.log(`❌ ERREUR DE CHARGEMENT pour ${movie.title}`);
+      console.log(`📍 URL qui a échoué: ${thumbnailSrc}`);
+      console.log(`🔍 Type de fichier detecté:`, thumbnailSrc.startsWith('data:') ? 'DATA_URL' : 
+                                                    thumbnailSrc.startsWith('http') ? 'HTTP_URL' :
+                                                    thumbnailSrc.startsWith('file://') ? 'FILE_URL' :
+                                                    'CHEMIN_ABSOLU');
+      console.log(`📂 Affiche locale disponible: ${movie.local_poster || 'AUCUNE'}`);
+      
+      // Utiliser l'image par défaut
+      thumbnailImg.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzFlM2E2ZCIvPgo8dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iMC4zZW0iPkF1Y3VuZSBpbWFnZTwvdGV4dD4KPC9zdmc+"; 
+    };
+
+    // Debug: Ajout d'un log quand l'image se charge correctement
+    thumbnailImg.onload = () => {
+      console.log(`✅ Image chargée avec succès pour ${movie.title}: ${thumbnailSrc}`);
+    };
     
     // Configurer le titre
     mediaCard.querySelector('.media-title').textContent = movie.title;

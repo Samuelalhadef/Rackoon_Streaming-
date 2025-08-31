@@ -27,6 +27,7 @@ module.exports = {
   
   // Configuration des chemins
   paths: {
-    uploads: path.join(__dirname, 'uploads')
+    uploads: path.join(__dirname, 'uploads'),
+    posters: path.join(__dirname, 'uploads', 'posters')
   }
 };

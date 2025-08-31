@@ -27,6 +27,7 @@ function createMoviesTable() {
       duration INTEGER,
       size_bytes INTEGER,
       thumbnail TEXT,
+      local_poster TEXT,
       last_scan DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `, (err) => {
@@ -34,6 +35,33 @@ function createMoviesTable() {
       console.error('Erreur lors de la création de la table movies:', err.message);
     } else {
       console.log('Table movies créée ou déjà existante');
+      // Ajouter la colonne local_poster si elle n'existe pas déjà
+      addLocalPosterColumnIfNotExists();
+    }
+  });
+}
+
+// Fonction pour ajouter la colonne local_poster à la table existante
+function addLocalPosterColumnIfNotExists() {
+  // Vérifier d'abord si la colonne existe
+  db.all("PRAGMA table_info(movies)", (err, columns) => {
+    if (err) {
+      console.error('Erreur lors de la vérification de la structure de table:', err.message);
+      return;
+    }
+    
+    const hasLocalPosterColumn = columns.some(col => col.name === 'local_poster');
+    
+    if (!hasLocalPosterColumn) {
+      db.run(`ALTER TABLE movies ADD COLUMN local_poster TEXT`, (err) => {
+        if (err) {
+          console.error('Erreur lors de l\'ajout de la colonne local_poster:', err.message);
+        } else {
+          console.log('Colonne local_poster ajoutée à la table movies');
+        }
+      });
+    } else {
+      console.log('Colonne local_poster déjà présente dans la table movies');
     }
   });
 }
@@ -182,6 +210,73 @@ const Movie = {
           
           callback(null, movieData);
         });
+    });
+  },
+
+  // Supprimer un film de la base de données
+  delete: (id, callback) => {
+    const query = 'DELETE FROM movies WHERE id = ?';
+    
+    db.run(query, [id], function(err) {
+      if (err) {
+        return callback(err);
+      }
+      callback(null, { changes: this.changes });
+    });
+  },
+
+  // Obtenir les statistiques des fichiers
+  getStats: (callback) => {
+    const query = `
+      SELECT 
+        COUNT(*) as totalFiles,
+        SUM(size_bytes) as totalSize,
+        SUM(duration) as totalDuration,
+        AVG(size_bytes) as avgSize,
+        AVG(duration) as avgDuration,
+        COUNT(CASE WHEN thumbnail IS NOT NULL THEN 1 END) as filesWithThumbnails,
+        COUNT(DISTINCT format) as uniqueFormats
+      FROM movies
+    `;
+    
+    db.get(query, [], (err, stats) => {
+      if (err) {
+        return callback(err);
+      }
+
+      // Ajouter des statistiques par format
+      const formatQuery = `
+        SELECT 
+          format,
+          COUNT(*) as count,
+          SUM(size_bytes) as totalSize
+        FROM movies 
+        GROUP BY format 
+        ORDER BY count DESC
+      `;
+
+      db.all(formatQuery, [], (err, formats) => {
+        if (err) {
+          return callback(err);
+        }
+
+        callback(null, {
+          ...stats,
+          formats: formats
+        });
+      });
+    });
+  },
+
+  // Mettre à jour le chemin local de l'affiche d'un film
+  updateLocalPoster: (id, localPosterPath, callback) => {
+    const query = 'UPDATE movies SET local_poster = ? WHERE id = ?';
+    
+    db.run(query, [localPosterPath, id], function(err) {
+      if (err) {
+        return callback(err);
+      }
+      callback(null, { id, local_poster: localPosterPath, changes: this.changes });
     });
   }
 };

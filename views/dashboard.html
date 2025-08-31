@@ -4,15 +4,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rackoon Streaming</title>
-  <link rel="stylesheet" href="../css/dashboard.css">
-  <link rel="stylesheet" href="../css/modal.css">
-  <link rel="stylesheet" href="../css/video-player.css">
+  <link rel="stylesheet" href="../public/css/dashboard.css">
+  <link rel="stylesheet" href="../public/css/series.css">
+  <link rel="stylesheet" href="../public/css/modal.css">
+  <link rel="stylesheet" href="../public/css/video-player.css">
+  <link rel="stylesheet" href="../public/css/import-classification.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
   <!-- Barre de navigation -->
   <nav class="navbar">
-    <div class="logo">RACKOON</div>
+    <div class="navbar-left">
+      <div class="logo">Rackoon Streaming</div>
+      <div class="nav-links">
+        <a href="/dashboard" class="nav-link active">
+          <i class="fas fa-home"></i>
+          Accueil
+        </a>
+        <a href="file-manager-electron.html" class="nav-link">
+          <i class="fas fa-folder-open"></i>
+          Gestion des fichiers
+        </a>
+      </div>
+    </div>
     <div class="user-controls">
       <div class="user-profile">
         <span id="username"></span>
@@ -23,17 +37,15 @@
 
   <!-- Contenu principal -->
   <main class="main-content">
-    <!-- Zone de chargement -->
-    <div class="loading-container" id="loading-container">
-      <div class="status-message" id="status-message">Prêt à rechercher des vidéos</div>
-      <div class="progress-bar-container">
-        <div class="progress-bar" id="progress-bar"></div>
-      </div>
+
+    <!-- Conteneur principal pour toutes les sections de médias -->
+
+    <div class="dashboard-content" id="dashboard-content">
+      <!-- Les sections de catégories seront ajoutées ici dynamiquement -->
     </div>
 
-    <!-- Section des médias -->
-    <div class="section-header">
-      <h2 class="section-title">Médias Triés</h2>
+    <!-- Section des filtres et recherche (globale) -->
+    <div class="global-controls" style="display: none;">
       <div class="filters-search-container">
         <div class="search-filter">
           <span class="search-icon">
@@ -49,14 +61,6 @@
           </span>
           Filtres
         </button>
-      </div>
-    </div>
-
-    <div class="media-grid" id="media-grid">
-      <!-- Les médias seront ajoutés ici dynamiquement -->
-      <div class="empty-state">
-        <span class="icon">📼</span>
-        <p>Aucune vidéo trouvée. Utilisez le bouton + pour lancer une recherche.</p>
       </div>
     </div>
   </main>
@@ -613,9 +617,10 @@
   </style>  
 
   <!-- Scripts -->
-  <script src="../js/dashboard.js"></script>
-  <script src="../js/movie-modal.js"></script>
-  <script src="../js/video-player.js"></script>
-  <script src="../js/import-simple.js"></script>
+  <script src="../public/js/dashboard.js"></script>
+  <script src="../public/js/movie-modal.js"></script>
+  <script src="../public/js/video-player.js"></script>
+  <script src="../public/js/dashboard-categories.js"></script>
+  <script src="../public/js/import-classification.js"></script>
 </body>
 </html>

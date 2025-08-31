@@ -16,4 +16,13 @@ router.post('/scan', MovieController.scanDrive);
 // Route pour diffuser un film
 router.get('/stream/:id', MovieController.streamMovie);
 
+// Route pour supprimer un film de la base de données
+router.delete('/:id', MovieController.deleteMovie);
+
+// Route pour obtenir les statistiques des fichiers
+router.get('/stats', MovieController.getFileStats);
+
+// Route pour télécharger une affiche
+router.post('/download-poster', MovieController.downloadPoster);
+
 module.exports = router;

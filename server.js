@@ -27,9 +27,12 @@ app.use(session({
 // Servir les fichiers statiques
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/css', express.static(path.join(__dirname, 'css')));
+app.use('/js', express.static(path.join(__dirname, 'js')));
 
-// Création du dossier uploads s'il n'existe pas
+// Création des dossiers uploads et posters s'ils n'existent pas
 fs.ensureDirSync(config.paths.uploads);
+fs.ensureDirSync(config.paths.posters);
 
 // Routes de l'API
 app.use('/api/auth', require('./routes/auth'));
@@ -51,6 +54,15 @@ app.get('/dashboard', (req, res) => {
   }
   
   res.sendFile(path.join(__dirname, 'views', 'dashboard.html'));
+});
+
+app.get('/file-manager', (req, res) => {
+  // Vérifier si l'utilisateur est connecté
+  if (!req.session.user) {
+    return res.redirect('/');
+  }
+  
+  res.sendFile(path.join(__dirname, 'views', 'file-manager.html'));
 });
 
 // Route par défaut pour les erreurs 404
