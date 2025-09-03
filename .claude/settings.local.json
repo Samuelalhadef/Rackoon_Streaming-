@@ -8,7 +8,8 @@
       "Bash(node:*)",
       "Bash(dir \"C:\\Users\\jamet\\OneDrive\\Documents\\GitHub\\Rackoon_Streaming-\\uploads\\posters\")",
       "Bash(sqlite3:*)",
-      "Bash(del debug-db.js)"
+      "Bash(del debug-db.js)",
+      "Bash(npm install)"
     ],
     "deny": [],
     "ask": []
