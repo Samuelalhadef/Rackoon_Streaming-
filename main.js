@@ -1772,6 +1772,16 @@ ipcMain.handle('movies:downloadPoster', async (event, { movieId, posterUrl }) =>
     const https = require('https');
     const http = require('http');
     const crypto = require('crypto');
+    
+    // Vérifier si le mode hors ligne est activé
+    if (isOfflineModeEnabled()) {
+      console.log('🚫 Mode hors ligne: téléchargement d\'affiches désactivé');
+      return { 
+        success: false, 
+        message: 'Téléchargement d\'affiches désactivé en mode hors ligne',
+        offline: true 
+      };
+    }
 
     console.log(`🖼️ Début téléchargement affiche pour le film ${movieId}`);
     console.log(`📥 URL: ${posterUrl}`);
