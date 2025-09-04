@@ -601,19 +601,15 @@ function createCategorySection(categoryTitle, moviesInCategory) {
     // Configurer l'image de couverture - LOGIQUE SIMPLIFIÉE
     let thumbnailSrc = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzFlM2E2ZCIvPgo8dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iMC4zZW0iPkF1Y3VuZSBpbWFnZTwvdGV4dD4KPC9zdmc+"; // Image par défaut
     
-    if (movie.local_poster) {
-      // Affiche locale téléchargée - URL COMPLÈTE pour Electron
-      const filename = movie.local_poster.split('\\').pop().split('/').pop();
-      thumbnailSrc = `http://localhost:3000/uploads/posters/${filename}`;
-    } else if (movie.posterUrl && movie.posterUrl.startsWith('data:')) {
-      // Data URL (base64)
+    if (movie.posterUrl) {
+      // Priorité à posterUrl (contient l'image après téléchargement ou URL TMDB)
       thumbnailSrc = movie.posterUrl;
-    } else if (movie.posterUrl) {
-      // URL en ligne (TMDB)
-      thumbnailSrc = movie.posterUrl;
+    } else if (movie.local_poster) {
+      // Affiche locale téléchargée - Utiliser file:// pour Electron
+      thumbnailSrc = `file://${movie.local_poster}`;
     } else if (movie.thumbnail) {
-      // Miniature générée
-      thumbnailSrc = movie.thumbnail;
+      // Miniature générée par FFmpeg
+      thumbnailSrc = `file://${movie.thumbnail}`;
     }
     
     // Debug pour voir la source de l'image
@@ -622,9 +618,8 @@ function createCategorySection(categoryTitle, moviesInCategory) {
       posterUrl: movie.posterUrl, 
       thumbnail: movie.thumbnail,
       final_src: thumbnailSrc,
-      priorite_utilisee: movie.local_poster ? 'LOCAL_POSTER' : 
-                       (movie.posterUrl && movie.posterUrl.startsWith('data:')) ? 'DATA_URL' :
-                       movie.posterUrl ? 'POSTER_URL' :
+      priorite_utilisee: movie.posterUrl ? 'POSTER_URL' : 
+                       movie.local_poster ? 'LOCAL_POSTER' :
                        movie.thumbnail ? 'THUMBNAIL' : 'DEFAULT'
     });
     

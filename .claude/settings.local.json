@@ -10,7 +10,10 @@
       "Bash(sqlite3:*)",
       "Bash(del debug-db.js)",
       "Bash(npm install)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(python3:*)",
+      "Read(C:\\Users\\jamet\\AppData\\Roaming\\film-finder/**)",
+      "Read(C:\\Users\\jamet\\AppData\\Roaming\\film-finder/**)"
     ],
     "deny": [],
     "ask": []
