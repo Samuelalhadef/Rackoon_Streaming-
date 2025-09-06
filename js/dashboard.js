@@ -84,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
   //     statusMessage.textContent = 'Sélection du dossier à scanner...';
   //     progressBar.style.width = '0%';
       
+<<<<<<< HEAD
   //     // Lancer la recherche de dossier
   //     const result = await window.electronAPI.scanMovies();
   //     
@@ -150,6 +151,74 @@ document.addEventListener('DOMContentLoaded', () => {
   //     progressBar.style.width = '0%';
   //   }
   // });
+=======
+      // Lancer la recherche de dossier
+      const result = await window.electronAPI.scanMovies();
+      
+      if (result.success) {
+        statusMessage.textContent = result.message;
+        progressBar.style.width = '100%';
+        
+        // Masquer la barre de progression après 3 secondes
+        setTimeout(() => {
+          progressBar.style.width = '0%';
+          statusMessage.textContent = 'Prêt à rechercher des vidéos';
+        }, 3000);
+        
+        // Mettre à jour la liste des films
+        loadMovies();
+      } else {
+        statusMessage.textContent = result.message || 'Erreur lors de la recherche';
+        progressBar.style.width = '0%';
+      }
+    } catch (error) {
+      console.error('Erreur lors de la recherche de films:', error);
+      statusMessage.textContent = 'Erreur lors de la recherche';
+      progressBar.style.width = '0%';
+    }
+  });
+  
+  // Recherche de fichier
+  scanFileBtn.addEventListener('click', async () => {
+    try {
+      scanMenu.classList.remove('active');
+      statusMessage.textContent = 'Sélection du fichier à ajouter...';
+      progressBar.style.width = '0%';
+      
+      // Configuration pour rechercher un seul fichier
+      const options = {
+        mode: 'file',
+        filters: [
+          { name: 'Vidéos', extensions: ['mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'webm'] }
+        ]
+      };
+      
+      // Lancer la recherche d'un fichier
+      const result = await window.electronAPI.scanMovies(options);
+      
+      if (result.success) {
+        statusMessage.textContent = result.message;
+        progressBar.style.width = '100%';
+        
+        // Masquer la barre de progression après 3 secondes
+        setTimeout(() => {
+          progressBar.style.width = '0%';
+          statusMessage.textContent = 'Prêt à rechercher des vidéos';
+        }, 3000);
+        
+        // Mettre à jour la liste des films
+        loadMovies();
+      } else {
+        statusMessage.textContent = result.message || 'Erreur lors de l\'ajout du fichier';
+        progressBar.style.width = '0%';
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout du fichier:', error);
+      statusMessage.textContent = 'Erreur lors de l\'ajout du fichier';
+      progressBar.style.width = '0%';
+    }
+  });
+>>>>>>> parent of 5aa43b0 (Ajout du système de classification avancé avec séries et métadonnées)
   
   // Recherche dans la section films
   filterSearch.addEventListener('input', () => {

@@ -20,6 +20,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openMovieFolder: (movieId) => ipcRenderer.invoke('movies:openFolder', movieId),
   generateThumbnail: (movieId) => ipcRenderer.invoke('movies:generateThumbnail', movieId),
   generateAllThumbnails: () => ipcRenderer.invoke('movies:generateAllThumbnails'),
+<<<<<<< HEAD
   deleteMovie: (movieId) => ipcRenderer.invoke('movies:delete', movieId),
   getMovieStats: () => ipcRenderer.invoke('movies:getStats'),
   playMovie: (movieId) => ipcRenderer.invoke('movies:getPath', movieId),
@@ -35,6 +36,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getAllSeries: () => ipcRenderer.invoke('series:getAll'),
   createSeries: (seriesData) => ipcRenderer.invoke('series:create', seriesData),
   getSeriesData: (category) => ipcRenderer.invoke('movies:getSeriesData', category),
+=======
+>>>>>>> parent of 5aa43b0 (Ajout du système de classification avancé avec séries et métadonnées)
   
   // Événements
   onScanStatus: (callback) => {
