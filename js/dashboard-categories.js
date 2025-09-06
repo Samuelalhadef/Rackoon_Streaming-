@@ -270,7 +270,6 @@ class DashboardCategories {
 
   // Afficher la modale de création de catégorie
   showNewCategoryModal() {
-    // TODO: Implémenter la modale de création de catégorie
     const name = prompt('Nom de la nouvelle catégorie :');
     if (name && name.trim()) {
       this.createNewCategory(name.trim());

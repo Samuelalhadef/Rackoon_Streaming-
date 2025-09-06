@@ -11,6 +11,11 @@ const https = require('https');
 const http = require('http');
 const crypto = require('crypto');
 
+// Fonction pour vérifier la connectivité réseau
+function isNetworkAvailable() {
+  return !config.offlineMode.enabled || !config.offlineMode.skipNetworkFeatures;
+}
+
 // Connexion à la base de données pour les requêtes directes
 const db = new sqlite3.Database(config.database.path);
 
@@ -214,6 +219,15 @@ const MovieController = {
           message: 'ID du film et URL de l\'affiche requis'
         });
       }
+      
+      // Vérifier si le mode hors ligne est activé
+      if (!isNetworkAvailable()) {
+        return res.status(503).json({
+          success: false,
+          message: 'Fonctionnalité de téléchargement d\'affiches désactivée en mode hors ligne',
+          offline: true
+        });
+      }
 
       // Créer le dossier des affiches s'il n'existe pas
       await fs.ensureDir(config.paths.posters);
@@ -354,6 +368,12 @@ async function scanDirectoryForMovies(directoryPath) {
 async function downloadPosterFromUrl(url, movieId) {
   return new Promise((resolve, reject) => {
     try {
+      // Vérifier si le réseau est disponible
+      if (!isNetworkAvailable()) {
+        console.log('Mode hors ligne: téléchargement d\'affiche ignoré');
+        resolve(null);
+        return;
+      }
       // Générer un nom de fichier unique basé sur l'ID du film et un hash de l'URL
       const urlHash = crypto.createHash('md5').update(url).digest('hex').substring(0, 8);
       const extension = path.extname(url.split('?')[0]) || '.jpg';
